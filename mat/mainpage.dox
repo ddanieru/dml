@@ -1,0 +1,12 @@
+/**
+
+@mainpage Documentation
+
+Fortran library for numerical linear algebra.\n
+
+Look at Data Types and Files.
+
+@todo Compile with CMake
+@todo Library calls from Python
+
+*/

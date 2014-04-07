@@ -1,0 +1,13 @@
+/**
+
+@mainpage Documentation
+
+Fortran library for numerical optimization.\n
+
+Look at Data Types and Files.
+
+@todo Generalize all to be multi dimensional
+@todo Compile with CMake
+@todo Library calls from Python
+
+*/
