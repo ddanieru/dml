@@ -1,3 +1,7 @@
+Daniel Math Library
+
 mat holds matrix algebra routines
 int holds integration routines
 opt holds optimization routines
+
+Licensed under the GPL v3. See LICENSE.
