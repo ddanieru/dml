@@ -8,3 +8,6 @@ install: true # skip dependencies
 
 script:
   - make
+
+notifications:
+  email: false
