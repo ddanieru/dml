@@ -30,7 +30,6 @@ cx_vec fourier_to_real(cx_vec c)
 { // Zero frequency shifted to the origin
   const unsigned long M = c.size();
   const unsigned long N = (M-1)/2;
-  //cx_vec u = zeros<cx_vec>(M);
   cx_vec u(M);
 
   long k;
@@ -51,7 +50,6 @@ cx_vec real_to_fourier(cx_vec u)
 { // Zero frequency shifted to the origin
   const unsigned long M = u.size();
   const unsigned long N = (M-1)/2;
-  //cx_vec c = zeros<cx_vec>(M);
   cx_vec c(M);
 
   long k;
@@ -76,24 +74,8 @@ mat computeL(unsigned long M)
    * or simply L_{ii} = 2 pi (j^2 + 1)
    * */
   const unsigned long N = (M-1)/2;
-  //mat L = zeros<mat>(M,M);
   mat L(M,M);
 
-  /*
-  long j, i;
-  for (unsigned i1=0; i1<M; i1++)
-  {
-    i = i1 - N;
-    for (unsigned j1=0; j1<M; j1++)
-    {
-      j = j1 - N;
-      if (i==j) 
-      {
-        L(i1,j1) = 2.0 * M_PI * (pow(j,2) + 1);
-      }
-    }
-  }
-  */
   long j;
   for (unsigned j1=0; j1<M; j1++)
   {
@@ -115,7 +97,7 @@ cx_vec ifftshift(cx_vec anyvector)
   { /*  M is odd */ 
     n = M/2 + 1;
   } else { 
-    n = M/2;
+    n = M/2+1;
   }
   anyvector = shift(anyvector,n); // M=21 => +11
 
@@ -135,7 +117,7 @@ cx_vec fftshift(cx_vec anyvector)
   { /*  M is odd */ 
     n = M/2;
   } else {
-    n = M/2;
+    n = M/2-1;
   }
   anyvector = shift(anyvector,n); // M=21 => +10
 
@@ -151,9 +133,6 @@ cx_vec solve_constant_coeff(cx_vec f)
    * Lc = f
    * */
   const unsigned long M = f.size();
-  //mat L     = zeros<mat>(M,M);
-  //cx_vec c  = zeros<cx_vec>(M);
-  //vec rec   = zeros<vec>(M);
   mat L(M,M);
   cx_vec c(M);
   vec rec(M);
@@ -177,7 +156,6 @@ cx_vec solve_constant_coeff(cx_vec f)
   return c;
 }
 
-
 /*******************************************************************************
  * main()
  * *****************************************************************************/
@@ -185,14 +163,7 @@ int main()
 {
   cout.precision(8);
   cout.setf(ios::fixed);
-  const unsigned long N = 5000;
-  const unsigned long M = 2*N+1;
-
-  //cx_vec x    = zeros<cx_vec>(M);
-  //cx_vec u    = zeros<cx_vec>(M);
-  //cx_vec c    = zeros<cx_vec>(M);
-  //cx_vec unum = zeros<cx_vec>(M);
-  //cx_vec f    = zeros<cx_vec>(M);
+  const unsigned long M = pow(2,10); //2*N+1;
 
   cx_vec x(M);
   cx_vec u(M);
