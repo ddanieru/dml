@@ -24,46 +24,6 @@ using namespace std;
 using namespace arma;
 
 /*******************************************************************************
- * Fourier to Real
- * *****************************************************************************/
-cx_vec fourier_to_real(cx_vec c)
-{ // Zero frequency shifted to the origin
-  const unsigned long M = c.size();
-  const unsigned long N = (M-1)/2;
-  cx_vec u(M);
-
-  long k;
-  for (unsigned long l=0; l<M; l++)
-  {
-    for (unsigned long kpositive=0; kpositive<M; kpositive++)
-    {
-      k = kpositive - N;
-      u(l) += c(kpositive) * polar<double>(1.0, 2.0 * M_PI * k * l / M);
-    }
-  }
-  return u;
-}
-/*******************************************************************************
- * Real to Fourier
- * *****************************************************************************/
-cx_vec real_to_fourier(cx_vec u)
-{ // Zero frequency shifted to the origin
-  const unsigned long M = u.size();
-  const unsigned long N = (M-1)/2;
-  cx_vec c(M);
-
-  long k;
-  for (unsigned long kpositive=0; kpositive<M; kpositive++)
-  {
-    for (unsigned long l=0; l<M; l++)
-    {
-      k = kpositive - N;
-      c(kpositive) += (1.0/M) * u(l) * polar<double>(1.0, - 2.0 * M_PI * k * l / M);
-    }
-  }
-  return c;
-}
-/*******************************************************************************
  * Compute Lower triangular matrix
  * *****************************************************************************/
 mat computeL(unsigned long M)
@@ -88,7 +48,8 @@ mat computeL(unsigned long M)
 /*******************************************************************************
  * Shift the zero-frequency to the center before fft
  * *****************************************************************************/
-cx_vec ifftshift(cx_vec anyvector)
+template <class Tvector>
+Tvector ifftshift(Tvector anyvector)
 {
   long n;
   size_t M = anyvector.size();
@@ -108,7 +69,8 @@ cx_vec ifftshift(cx_vec anyvector)
 /*******************************************************************************
  * Shift the zero-frequency to the center after fft
  * *****************************************************************************/
-cx_vec fftshift(cx_vec anyvector)
+template <class Tvector>
+Tvector fftshift(Tvector anyvector)
 {
   long n;
   size_t M = anyvector.size();
@@ -146,7 +108,7 @@ cx_vec solve_constant_coeff(cx_vec f)
   fftw_execute(plan);
   fftw_destroy_plan(plan);
   f /= M;                  // Normalization
-  f = fftshift(f); 
+  f = fftshift<cx_vec>(f); 
   f *= - 2.0 * M_PI ;
 
   vec rfi   = real(f);
@@ -192,7 +154,7 @@ int main()
   c = solve_constant_coeff(f);
 
   // inverse FFT
-  c = ifftshift(c);
+  c = ifftshift<cx_vec>(c);
   fftw_complex* in = reinterpret_cast<fftw_complex*> (c.memptr());
   fftw_complex* out = reinterpret_cast<fftw_complex*> (unum.memptr());
   fftw_plan plan = fftw_plan_dft_1d(M, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
