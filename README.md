@@ -8,7 +8,8 @@ Daniel Math Library
 * int: holds integration routines
 * opt: holds optimization routines
 * analysis: holds numerical analysis routines
+* pde: holds partial differential equation routines
 
 ### Licensing
 
-Licensed under the GPL v3. See LICENSE.
+Licensed under the GPL v3. See [LICENSE][LICENSE].
