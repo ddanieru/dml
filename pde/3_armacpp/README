@@ -1,0 +1,4 @@
+sudo update-alternatives --config libblas.so       --> openblas
+sudo update-alternatives --config libblas.so.3     --> openblas
+sudo update-alternatives --config liblapack.so.3   --> lapack
+
