@@ -11,7 +11,7 @@ function u = fourier_to_real(c)
             //u(l) = u(l)*(-1)^(l+k); 
         end
     end
-    u = fftshift(ifft(ifftshift(c)));
+    //u = fftshift(ifft(ifftshift(c)));
     
     
 endfunction

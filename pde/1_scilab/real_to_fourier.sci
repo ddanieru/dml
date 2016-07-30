@@ -10,7 +10,7 @@ function c = real_to_fourier(u)
             //c(k1) = c(k1)*(-1)^(k1+l);
         end
     end
-    c = fftshift(fft(ifftshift(u)));
+    //c = fftshift(fft(ifftshift(u)));
     
     
 endfunction
