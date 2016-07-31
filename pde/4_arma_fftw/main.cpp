@@ -24,7 +24,7 @@ using namespace std;
 using namespace arma;
 
 /*******************************************************************************
- * Compute Lower triangular matrix
+ * Compute the (diagonal) Linear operator matrix
  * *****************************************************************************/
 mat computeL(unsigned long M)
 {
@@ -45,6 +45,37 @@ mat computeL(unsigned long M)
   return L;
 }
 
+/*******************************************************************************
+ * Compute the banded Linear operator matrix
+ * *****************************************************************************/
+cx_mat computeLpot(unsigned long M, cx_vec V)
+{
+  /* <*,*> is the inner product
+   * e_k(x) = e^(ikx) is the Fourier basis 
+   * L_{ij} = < e_i, (-e_j'' + Ve_j) > = 2 pi [j^2*delta_{ij}+V(i-j+N) ]
+   * V is projected over diagonals: V_{-N} in lower-left corner; V_N in
+   * upper-right corner.
+   * */
+  const long N = (M-1)/2;
+  cx_mat L = zeros<cx_mat>(M,M);
+
+  long j, i;
+  for (unsigned long i1=0; i1<M; i1++)
+  {
+    i = i1 - N;
+    L(i1,i1) += 2.0 * M_PI * pow(i,2);
+    for (unsigned long j1=0; j1<M; j1++)
+    {
+      j = j1 - N;
+      if (abs(i-j)<(N+1)) 
+      {
+        long l = (i-j)+N;
+        L(i1,j1) += 2.0 * M_PI * V(l);
+      }
+    }
+  }
+  return L;
+}
 /*******************************************************************************
  * Shift the zero-frequency to the center before fft
  * *****************************************************************************/
@@ -119,6 +150,48 @@ cx_vec solve_constant_coeff(cx_vec f)
 }
 
 /*******************************************************************************
+ * Solve linear system with non-constant coefficients.
+ * *****************************************************************************/
+cx_vec solve_nonconstant_coeff(cx_vec f, cx_vec V)
+{
+  /* Solve c in:
+   * L(f)c = f
+   * */
+  const unsigned long M = f.size();
+  cx_mat L(M,M);
+  cx_vec c(M);
+  vec rec(M);
+
+
+  // FFT V
+  //cx_vec Vcomplex = conv_to<cx_vec>::from(V);
+  fftw_complex* Vin = reinterpret_cast<fftw_complex*> (V.memptr());
+  fftw_plan plan = fftw_plan_dft_1d(M, Vin, Vin, FFTW_FORWARD, FFTW_ESTIMATE);
+  // Put data in samples (other than ESTIMATE)
+  fftw_execute(plan);
+  fftw_destroy_plan(plan);
+  //V = conv_to<vec>::from(Vcomplex);
+  V /= M;                  // Normalization
+  V = fftshift<cx_vec>(V); 
+
+  L = computeLpot(M,V);
+
+  // FFT f
+  fftw_complex* in = reinterpret_cast<fftw_complex*> (f.memptr());
+  plan = fftw_plan_dft_1d(M, in, in, FFTW_FORWARD, FFTW_ESTIMATE);
+  // Put data in samples (other than ESTIMATE)
+  fftw_execute(plan);
+  fftw_destroy_plan(plan);
+  f /= M;                  // Normalization
+  f = fftshift<cx_vec>(f); 
+  f *= 2.0 * M_PI ;
+
+  c = inv(L)*f;
+
+  return c;
+}
+
+/*******************************************************************************
  * main()
  * *****************************************************************************/
 int main()
@@ -135,7 +208,9 @@ int main()
 
 
   for (unsigned long l=0; l<M; ++l)
-  {
+  { // The collocation points start with 0.
+    // If it is changed to [2pi/M, 2pi] it
+    // only works for large M. Asymptotically the same.
     x(l) = 2 * M_PI * l / M;
   }
   /********************************* 
@@ -150,8 +225,23 @@ int main()
    * */
   u = exp(cos(x)); // Analytical solution.
   f=u % (-sin(x) % sin(x)+cos(x) + 1);
-
   c = solve_constant_coeff(f);
+  /********************************* 
+   * Solve:
+   *         -u''(x) + V(x)u'(x) = f(x)
+   *         with V(x) = 1 + sin(x).
+   ********************************* 
+   * Knowing that u = exp(cos(x)) then
+   * f = u (-sin(x) sin(x) + cos(x) + 1)
+   * and now we solve u from this f
+   * with the Galerkin method.
+   ************************************* 
+   * */
+  cx_vec V(M);
+  V = 1 + sin(x);
+  f=u % (-sin(x) % sin(x)+cos(x) + V);
+  c = solve_nonconstant_coeff(f,V);
+
 
   // inverse FFT
   c = ifftshift<cx_vec>(c);
