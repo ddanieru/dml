@@ -12,4 +12,6 @@ Daniel Math Library
 
 ### Licensing
 
-Licensed under the GPL v3. See [LICENSE][LICENSE].
+Licensed under the GPL v3. See [LICENSE][] for more details.
+
+[LICENSE]: LICENSE
